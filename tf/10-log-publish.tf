@@ -1,9 +1,4 @@
-resource "aws_s3_bucket" "log" {
-  bucket = "${local.appid}-log"
-  acl    = "private"
-}
-
-data "aws_iam_policy_document" "assume-log" {
+data "aws_iam_policy_document" "assume-log-publish" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -14,7 +9,7 @@ data "aws_iam_policy_document" "assume-log" {
   }
 }
 
-data "aws_iam_policy_document" "policy-log" {
+data "aws_iam_policy_document" "policy-log-publish" {
   statement {
     sid = "1"
     actions = [
@@ -42,19 +37,24 @@ data "aws_iam_policy_document" "policy-log" {
   }
 }
 
-resource "aws_iam_role" "log" {
-  name               = "${local.appid}-log"
-  assume_role_policy = data.aws_iam_policy_document.assume-log.json
+resource "aws_iam_role" "log-publish" {
+  name               = "${local.appid}-log-publish"
+  assume_role_policy = data.aws_iam_policy_document.assume-log-publish.json
 }
 
-resource "aws_iam_policy" "log" {
-  name   = "${local.appid}-log"
-  policy = data.aws_iam_policy_document.policy-log.json
+resource "aws_iam_policy" "log-publish" {
+  name   = "${local.appid}-log-publish"
+  policy = data.aws_iam_policy_document.policy-log-publish.json
 }
 
-resource "aws_iam_role_policy_attachment" "attach-log" {
-  role       = aws_iam_role.log.name
-  policy_arn = aws_iam_policy.log.arn
+resource "aws_iam_role_policy_attachment" "attach-log-publish" {
+  role       = aws_iam_role.log-publish.name
+  policy_arn = aws_iam_policy.log-publish.arn
+}
+
+resource "aws_s3_bucket" "log" {
+  bucket = "${local.appid}-log"
+  acl    = "private"
 }
 
 resource "aws_kinesis_firehose_delivery_stream" "log" {
@@ -62,7 +62,7 @@ resource "aws_kinesis_firehose_delivery_stream" "log" {
   destination = "extended_s3"
 
   extended_s3_configuration {
-    role_arn        = aws_iam_role.log.arn
+    role_arn        = aws_iam_role.log-publish.arn
     bucket_arn      = aws_s3_bucket.log.arn
     buffer_size     = 1
     buffer_interval = 60
