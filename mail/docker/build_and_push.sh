@@ -17,4 +17,5 @@ else
     echo "build is different. push to ecr..."
     aws ecr get-login-password | docker login --username AWS --password-stdin $REPO
     docker push "$REPO/$APP:$DATE"
+    aws lambda update-function-code --function-name $APP --image-uri "$REPO/$APP:$DATE"
 fi
