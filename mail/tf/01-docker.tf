@@ -72,9 +72,14 @@ resource "aws_cloudwatch_log_group" "sender" {
 
 resource "aws_lambda_function" "sender" {
   function_name = local.name
+  description   = "render template and send mail via SES"
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.sender.repository_url}:latest"
   role          = aws_iam_role.sender.arn
   timeout       = 60
   memory_size   = 1024
+
+  lifecycle {
+    ignore_changes = [image_uri]
+  }
 }
