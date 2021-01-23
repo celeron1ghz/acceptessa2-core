@@ -11,7 +11,7 @@ REMOTE_BUILDS=$(aws ecr list-images --repository-name $APP | jq '.imageIds[].ima
 REMOTE_COUNT=$(echo "$REMOTE_BUILDS" | sort | uniq | wc -l)
 ALL_COUNT=$(echo "$LOCAL_BUILD\n$REMOTE_BUILDS" | sort | uniq | wc -l)
 
-if [ $ALL_COUNT = $REMOTE_COUNT ]; then
+if [ "$REMOTE_BUILDS" != "" -a $ALL_COUNT = $REMOTE_COUNT ]; then
     echo "build is same. skipping..."
 else
     echo "build is different. push to ecr..."
