@@ -1,7 +1,5 @@
 APP=acceptessa2-mail-sender
 
-docker build . -t $APP
-
 LOCAL_BUILD=$(docker inspect $APP | jq '.[0].RepoDigests[0] | split("@")[1]' -r)
 REMOTE_BUILDS=$(aws ecr list-images --repository-name $APP | jq '.imageIds[].imageDigest' -r)
 
