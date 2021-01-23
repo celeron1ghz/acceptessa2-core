@@ -50,6 +50,29 @@ resource "aws_ecr_repository" "sender" {
   }
 }
 
+resource "aws_ecr_lifecycle_policy" "policy" {
+  repository = aws_ecr_repository.sender.name
+
+  policy = <<EOF
+{
+    "rules": [
+        {
+            "rulePriority": 1,
+            "description": "Keep last 5 images",
+            "selection": {
+                "tagStatus": "any",
+                "countType": "imageCountMoreThan",
+                "countNumber": 5
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
+    ]
+}
+EOF
+}
+
 resource "aws_iam_role" "sender" {
   name               = "${local.appid}-mail-sender"
   assume_role_policy = data.aws_iam_policy_document.assume-sender.json
