@@ -1,6 +1,7 @@
 use utf8;
 use warnings;
 use strict;
+$| = 1;
 
 sub handle {
     my $payload = shift;
