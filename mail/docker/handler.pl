@@ -4,7 +4,7 @@ use strict;
 
 sub handle {
     my $payload = shift;
-    print "log test";
+    print "log test from perl";
     return +{"hello" => "lambda"};
 }
 
