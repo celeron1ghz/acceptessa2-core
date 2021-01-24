@@ -9,20 +9,20 @@ use Scalar::Util 'reftype';
 # my $tx = Text::Xslate->new();
 
 sub run {
-    my $payload = shift;
+    my ( $class, $payload ) = @_;
 
-    if ( reftype($payload) ne 'ARRAY' ) {
+    if ( ( reftype($payload) || '' ) ne 'HASH' ) {
         return { error => 'invalid parameter' };
     }
 
     my $template = $payload->{template};
     my $data     = $payload->{data};
 
-    if ( reftype($template) ) {
+    if ( !$template || reftype($template) ) {
         return { error => 'template is invalid' };
     }
 
-    if ( reftype($data) ne 'HASH' ) {
+    if ( ( reftype($data) || '' ) ne 'HASH' ) {
         return { error => 'data is invalid' };
     }
 

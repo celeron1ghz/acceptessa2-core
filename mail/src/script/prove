@@ -3,4 +3,4 @@ cd $(dirname $0)/../
 docker run \
     -v $PWD:/var/task \
     --entrypoint /usr/bin/perl \
-    acceptessa2-mail-sender -MApp::Prove -e 'my $app = App::Prove->new; $app->process_args(@ARGV); exit( $app->run ? 0 : 1 );'
+    acceptessa2-mail-sender -MApp::Prove -I/var/task/lib/ -e 'my $app = App::Prove->new; $app->process_args("-Ilib"); exit( $app->run ? 0 : 1 );'
