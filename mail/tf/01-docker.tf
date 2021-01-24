@@ -111,3 +111,17 @@ resource "aws_s3_bucket" "template" {
   bucket = "${local.appid}-mail-template"
   acl    = "private"
 }
+
+resource "aws_s3_bucket" "attachment" {
+  bucket = "${local.appid}-mail-attachment"
+  acl    = "private"
+
+  lifecycle_rule {
+    id      = "expire"
+    enabled = true
+
+    expiration {
+      days = 1
+    }
+  }
+}
