@@ -6,6 +6,7 @@ use Acceptessa2::Mail::Parameter;
 
 use Try::Tiny;
 use Encode;
+use File::Basename;
 
 use Paws;
 use Text::Xslate;
@@ -26,9 +27,16 @@ sub get_template {
     };
 }
 
+sub get_attachment {
+    my ($self, $key) = @_;
+
+    # warn $key;
+    return;
+}
+
 sub send_mail {
     my $ses = Paws->service('SES', region => 'us-east-1');
-
+    return;
 }
 
 sub run {
@@ -44,11 +52,11 @@ sub run {
     my $tx       = Text::Xslate->new();
     my $rendered = $tx->render_string($tmpl, $p->data);
 
-    $rendered =~ s/<!--\s*(.*?)\s+-->\r?\n//; ## subject get from template's first comment
+    $rendered =~ s/<!--\s*(.*?)\s+-->\r?\n//;    ## subject get from template's first comment
     my $subject = $1;
-    my @body;
+    my @mimes;
 
-    push @body,
+    push @mimes,
       Email::MIME->create(
         'attributes' => {
             'content_type' => 'text/html',
@@ -58,18 +66,46 @@ sub run {
         'body' => encode('utf-8', $rendered),
       );
 
+    if (my $attaches = $p->attachment) {
+
+        # while (my ($id, $s3key) = each %{ $p->attachment }) {
+        # while (my ($id, $s3key) = each %{ $p->attachment }) {
+        for my $id (sort keys %$attaches) {
+            my $s3key   = $attaches->{$id};
+            my $content = $class->get_attachment($s3key);
+            my $base    = basename($s3key);
+
+            push @mimes,
+              Email::MIME->create(
+                header_str => [
+                    'Content-Id' => "<$id>",
+                ],
+                attributes => {
+                    content_type => 'image/jpeg',
+                    name         => $base,
+                    filename     => $base,
+                    encoding     => 'base64',
+                    disposition  => 'attachment',
+                },
+                body => $content,
+              );
+
+        }
+
+    }
+
     my $parent = Email::MIME->create(
         header => [
-            'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),      # sprintf "%s <%s>", $ex->exhibition_name, $from,
+            'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),    # sprintf "%s <%s>", $ex->exhibition_name, $from,
             'To'      => encode('MIME-Header-ISO_2022_JP', $p->to),
             'Subject' => encode('MIME-Header-ISO_2022_JP', $subject),
             $p->cc ? ('Cc' => $p->cc) : (),
         ],
-        parts => \@body,
+        parts => \@mimes,
     );
 
     ## send mail
-    $class->send_mail($parent->as_string);
+    $class->send_mail($parent);
 
     return { success => 1 };
 }
