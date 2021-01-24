@@ -29,24 +29,29 @@ sub get_template {
 
 sub get_attachment {
     my ($self, $key) = @_;
-
-    # warn $key;
-    return;
+    my $s3  = Paws->service('S3', region => 'ap-northeast-1');
+    my $ret = try {
+        return $s3->GetObject(Bucket => $ATTACHMENT_BUCKET, Key => $key);
+    }
+    catch {
+        warn "attachment not found: $key";
+        return;
+    };
 }
 
 sub send_mail {
+    my ($self, $mail) = @_;
     my $ses = Paws->service('SES', region => 'us-east-1');
+    my $ret = $ses->SendRawEmail(RawMessage => $mail->as_string);
     return;
 }
 
 sub run {
     my ($class, $payload) = @_;
-    my $p = try { Acceptessa2::Mail::Parameter->new($payload) }
-      or return { error => 'invalid parameter' };
+    my $p = try { Acceptessa2::Mail::Parameter->new($payload) } or return { error => 'invalid parameter' };
 
     ## fetch template
-    my $tmpl = $class->get_template($p->template)
-      or return { error => 'template not found' };
+    my $tmpl = $class->get_template($p->template) or return { error => 'template not found' };
 
     ## render template
     my $tx       = Text::Xslate->new();
@@ -67,9 +72,6 @@ sub run {
       );
 
     if (my $attaches = $p->attachment) {
-
-        # while (my ($id, $s3key) = each %{ $p->attachment }) {
-        # while (my ($id, $s3key) = each %{ $p->attachment }) {
         for my $id (sort keys %$attaches) {
             my $s3key   = $attaches->{$id};
             my $content = $class->get_attachment($s3key);
@@ -89,14 +91,12 @@ sub run {
                 },
                 body => $content,
               );
-
         }
-
     }
 
     my $parent = Email::MIME->create(
         header => [
-            'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),    # sprintf "%s <%s>", $ex->exhibition_name, $from,
+            'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),
             'To'      => encode('MIME-Header-ISO_2022_JP', $p->to),
             'Subject' => encode('MIME-Header-ISO_2022_JP', $subject),
             $p->cc ? ('Cc' => $p->cc) : (),
