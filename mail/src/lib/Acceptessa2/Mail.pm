@@ -11,6 +11,7 @@ use File::Basename;
 use Paws;
 use Text::Xslate;
 use Email::MIME;
+use MIME::Base64;
 
 my $TEMPLATE_BUCKET   = 'acceptessa2-mail-template';
 my $ATTACHMENT_BUCKET = 'acceptessa2-mail-attachment';
@@ -19,10 +20,11 @@ sub get_template {
     my ($self, $key) = @_;
     my $s3  = Paws->service('S3', region => 'ap-northeast-1');
     my $ret = try {
-        return $s3->GetObject(Bucket => $TEMPLATE_BUCKET, Key => $key);
+        my $o = $s3->GetObject(Bucket => $TEMPLATE_BUCKET, Key => $key);
+        return $o ? $o->Body : undef;
     }
     catch {
-        warn "template not found: $key";
+        warn sprintf "template not found: %s (%s:%s)", $_->message, $_->http_status, $_->code;
         return;
     };
 }
@@ -34,7 +36,7 @@ sub get_attachment {
         return $s3->GetObject(Bucket => $ATTACHMENT_BUCKET, Key => $key);
     }
     catch {
-        warn "attachment not found: $key";
+        warn sprintf "attachment not found: %s (%s:%s)", $_->message, $_->http_status, $_->code;
         return;
     };
 }
@@ -42,8 +44,13 @@ sub get_attachment {
 sub send_mail {
     my ($self, $mail) = @_;
     my $ses = Paws->service('SES', region => 'us-east-1');
-    my $ret = $ses->SendRawEmail(RawMessage => $mail->as_string);
-    return;
+    my $ret = try {
+        return $ses->SendRawEmail(RawMessage => { Data => encode_base64 $mail->as_string });
+    }
+    catch {
+        warn sprintf "mail send fail: %s (%s:%s)", $_->message, $_->http_status, $_->code;
+        return;
+    };
 }
 
 sub run {
@@ -71,6 +78,7 @@ sub run {
         'body' => encode('utf-8', $rendered),
       );
 
+    ## add attachments if exists
     if (my $attaches = $p->attachment) {
         for my $id (sort keys %$attaches) {
             my $s3key   = $attaches->{$id};
@@ -94,6 +102,7 @@ sub run {
         }
     }
 
+    ## create mail
     my $parent = Email::MIME->create(
         header => [
             'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),

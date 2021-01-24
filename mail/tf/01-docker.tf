@@ -19,25 +19,37 @@ data "aws_iam_policy_document" "assume-sender" {
 
 data "aws_iam_policy_document" "policy-sender" {
   statement {
-    sid = "1"
-    actions = [
-      "logs:CreateLogStream"
-    ]
-
+    sid     = "1"
+    actions = ["logs:CreateLogStream"]
     resources = [
       "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name}:*"
     ]
   }
 
   statement {
-    sid = "2"
-    actions = [
-      "logs:PutLogEvents",
-    ]
-
+    sid     = "2"
+    actions = ["logs:PutLogEvents"]
     resources = [
       "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.name}:*:*"
     ]
+  }
+
+  statement {
+    sid       = "3"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.template.arn}/*"]
+  }
+
+  statement {
+    sid       = "4"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.attachment.arn}/*"]
+  }
+
+  statement {
+    sid       = "5"
+    actions   = ["ses:SendRawEmail"]
+    resources = ["*"]
   }
 }
 
