@@ -7,6 +7,8 @@ RUN mkdir /var/task/ \
     && find /usr/local/share/perl5/ | grep '\.pod$' | xargs rm \
     && apk del perl-app-cpanminus perl-dev build-base wget libressl-dev musl-dev expat-dev
 
+RUN apk add perl-test-longstring perl-yaml
+
 COPY handler.pl /var/task/
 WORKDIR /var/task/
 ENTRYPOINT [ "/usr/bin/perl", "-MAWS::Lambda::Bootstrap", "-e", "bootstrap(@ARGV)" ]
