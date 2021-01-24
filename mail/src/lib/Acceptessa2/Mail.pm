@@ -43,6 +43,9 @@ sub run {
     ## render template
     my $tx       = Text::Xslate->new();
     my $rendered = $tx->render_string($tmpl, $p->data);
+
+    $rendered =~ s/<!--\s*(.*?)\s+-->\r?\n//; ## subject get from template's first comment
+    my $subject = $1;
     my @body;
 
     push @body,
@@ -59,7 +62,7 @@ sub run {
         header => [
             'From'    => encode('MIME-Header-ISO_2022_JP', $p->from),      # sprintf "%s <%s>", $ex->exhibition_name, $from,
             'To'      => encode('MIME-Header-ISO_2022_JP', $p->to),
-            'Subject' => encode('MIME-Header-ISO_2022_JP', $p->subject),
+            'Subject' => encode('MIME-Header-ISO_2022_JP', $subject),
             $p->cc ? ('Cc' => $p->cc) : (),
         ],
         parts => \@body,

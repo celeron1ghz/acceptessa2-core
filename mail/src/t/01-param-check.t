@@ -44,6 +44,7 @@ foreach my $t (@tests) {
 
 __DATA__
 tmpl1: |
+  <!-- subject subject -->
   <: $hello :> <: $world :>
 result1: |
   From: from@from
