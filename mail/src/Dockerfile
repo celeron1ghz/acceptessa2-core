@@ -5,7 +5,7 @@ RUN mkdir /var/task/ \
     && cpanm install --notest --no-man-pages AWS::Lambda Email::MIME Text::Xslate Paws \
     && rm -Rf /root/.cpanm/ \
     && find /usr/local/share/perl5/ | grep '\.pod$' | xargs rm \
-    && apk del perl-app-cpanminus perl-dev build-base wget libressl-dev musl-dev expat-dev
+    && apk del perl-app-cpanminus perl-dev build-base wget libressl-dev musl-dev
 
 RUN apk add perl-test-longstring perl-yaml
 
