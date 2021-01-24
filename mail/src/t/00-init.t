@@ -2,7 +2,7 @@ use strict;
 use Test::More;
 use Acceptessa2::Mail;
 
-plan tests => 14;
+plan tests => 15;
 
 is_deeply +Acceptessa2::Mail->run(),           { error => 'invalid parameter' };
 is_deeply +Acceptessa2::Mail->run(undef),      { error => 'invalid parameter' };
@@ -20,4 +20,5 @@ is_deeply +Acceptessa2::Mail->run( { template => "a", data => undef } ),  { erro
 is_deeply +Acceptessa2::Mail->run( { template => "a", data => \my $a } ), { error => 'data is invalid' };
 is_deeply +Acceptessa2::Mail->run( { template => "a", data => [] } ),     { error => 'data is invalid' };
 
-is_deeply +Acceptessa2::Mail->run( { template => "a", data => {} } ), 1;
+is_deeply +Acceptessa2::Mail->run( { template => "z", data => {} } ), { error => "error on get template: 404 InvalidContent" };
+is_deeply +Acceptessa2::Mail->run( { template => "template.tt", data => {test => 111222333} } ), 1;

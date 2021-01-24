@@ -106,3 +106,8 @@ resource "aws_lambda_function" "sender" {
     ignore_changes = [image_uri]
   }
 }
+
+resource "aws_s3_bucket" "template" {
+  bucket = "${local.appid}-mail-template"
+  acl    = "private"
+}
