@@ -9,7 +9,8 @@ RUN mkdir /var/task/ \
 
 RUN apk add perl-test-longstring perl-yaml
 
+COPY lib /var/task/lib/
 COPY handler.pl /var/task/
 WORKDIR /var/task/
-ENTRYPOINT [ "/usr/bin/perl", "-MAWS::Lambda::Bootstrap", "-e", "bootstrap(@ARGV)" ]
+ENTRYPOINT [ "/usr/bin/perl", "-Ilib", "-MAWS::Lambda::Bootstrap", "-e", "bootstrap(@ARGV)" ]
 CMD [ "handler.handle" ]
