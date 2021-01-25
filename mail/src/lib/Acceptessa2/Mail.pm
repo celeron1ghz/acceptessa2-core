@@ -63,7 +63,7 @@ sub run {
 
     ## render template
     my $err;
-    my $tx = Text::Xslate->new();
+    my $tx       = Text::Xslate->new();
     my $rendered = try {
         $tx->render_string($tmpl, $p->data);
     }
@@ -91,8 +91,8 @@ sub run {
     if (my $attaches = $p->attachment) {
         for my $id (sort keys %$attaches) {
             my $s3key   = $attaches->{$id};
-            my $content = $class->get_attachment($s3key);
-            my $base    = basename($s3key);
+            my $content = $class->get_attachment($s3key) or return { error => "attachment not found: $s3key" };
+            my $base = basename($s3key);
 
             push @mimes,
               Email::MIME->create(
