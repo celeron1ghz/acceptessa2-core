@@ -30,7 +30,7 @@ my @tests = (
     {
         template  => $data->{tmpl2},
         expected  => cr2crlf($data->{result2}),
-        desc      => 'basic template',
+        desc      => 'with attachment',
         parameter => {
             from     => 'from@from',
             to       => 'to@to',
@@ -46,6 +46,22 @@ my @tests = (
             }
         },
         ret => { success => 1 },
+    },
+    {
+        template  => '<: $test ',
+        expected  => "",
+        desc      => 'with error',
+        parameter => {
+            from     => 'from@from',
+            to       => 'to@to',
+            subject  => 'subject subject',
+            template => "z",
+            data     => {
+                hello => "mogemoge",
+                world => "fugafuga",
+            },
+        },
+        ret => { error => $data->{error1} },
     },
 );
 
@@ -68,7 +84,7 @@ foreach my $t (@tests) {
     local *Acceptessa2::Mail::send_mail    = sub { $result = $_[1] };
 
     my $ret           = Acceptessa2::Mail->run($t->{parameter});
-    my $mail_contents = $result->as_string;
+    my $mail_contents = $result ? $result->as_string : '';
     is_deeply $ret, $t->{ret}, "$t->{desc}: return value ok";
 
     if ($t->{parameter}->{attachment}) {
@@ -76,7 +92,7 @@ foreach my $t (@tests) {
         $mail_contents =~ s/$boundary/wawawawawawawawawawa/g;
     }
 
-    is_string $mail_contents, $t->{expected}, "$t->{desc}:   template render ok";
+    is_string $mail_contents, $t->{expected}, "$t->{desc}: template render ok";
 }
 
 __DATA__
@@ -135,3 +151,8 @@ result2: |
   YmJiYmJiYmJiYg==
   
   --wawawawawawawawawawa--
+error1: |
+  template syntax error: Text::Xslate::Syntax::Kolon: Malformed templates detected, near ' $test ', while parsing templates (<string>:1) at lib/Acceptessa2/Mail.pm line 68.
+  ----------------------------------------------------------------------------
+  <: $test 
+  ----------------------------------------------------------------------------

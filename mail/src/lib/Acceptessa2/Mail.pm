@@ -62,8 +62,16 @@ sub run {
     my $tmpl = $class->get_template($p->template) or return { error => 'template not found' };
 
     ## render template
-    my $tx       = Text::Xslate->new();
-    my $rendered = $tx->render_string($tmpl, $p->data);
+    my $err;
+    my $tx = Text::Xslate->new();
+    my $rendered = try {
+        $tx->render_string($tmpl, $p->data);
+    }
+    catch {
+        $err = $_;
+    };
+
+    return { error => "template syntax error: $err" } if $err;
 
     $rendered =~ s/<!--\s*(.*?)\s+-->\r?\n//;    ## subject get from template's first comment
     my $subject = $1;
