@@ -1,3 +1,5 @@
+cd $(dirname $0)/../
+
 APP=acceptessa2-mail-sender
 
 LOCAL_BUILD=$(docker inspect $APP | jq '.[0].RepoDigests[0] | split("@")[1]' -r)

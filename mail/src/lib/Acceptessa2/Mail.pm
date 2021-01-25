@@ -33,7 +33,8 @@ sub get_attachment {
     my ($self, $key) = @_;
     my $s3  = Paws->service('S3', region => 'ap-northeast-1');
     my $ret = try {
-        return $s3->GetObject(Bucket => $ATTACHMENT_BUCKET, Key => $key);
+        my $o = $s3->GetObject(Bucket => $ATTACHMENT_BUCKET, Key => $key);
+        return $o ? $o->Body : undef;
     }
     catch {
         warn sprintf "attachment not found: %s (%s:%s)", $_->message, $_->http_status, $_->code;
