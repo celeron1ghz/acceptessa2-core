@@ -117,6 +117,11 @@ resource "aws_lambda_function" "sender" {
   lifecycle {
     ignore_changes = [image_uri]
   }
+  environment {
+    variables = {
+      "PAWS_SILENCE_UNSTABLE_WARNINGS" = "1"
+    }
+  }
 }
 
 resource "aws_s3_bucket" "template" {
