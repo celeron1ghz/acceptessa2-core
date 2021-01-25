@@ -24,7 +24,7 @@ sub get_template {
         return $o ? $o->Body : undef;
     }
     catch {
-        warn sprintf "template not found: %s (%s:%s)", $_->message, $_->http_status, $_->code;
+        warn sprintf "template not found: %s (%s:%s)", $key, $_->message, $_->code;
         return;
     };
 }
@@ -37,7 +37,7 @@ sub get_attachment {
         return $o ? $o->Body : undef;
     }
     catch {
-        warn sprintf "attachment not found: %s (%s:%s)", $_->message, $_->http_status, $_->code;
+        warn sprintf "attachment not found: %s (%s:%s)", $key, $_->message, $_->code;
         return;
     };
 }
@@ -92,7 +92,7 @@ sub run {
         for my $id (sort keys %$attaches) {
             my $s3key   = $attaches->{$id};
             my $content = $class->get_attachment($s3key) or return { error => "attachment not found: $s3key" };
-            my $base = basename($s3key);
+            my $base    = basename($s3key);
 
             push @mimes,
               Email::MIME->create(
