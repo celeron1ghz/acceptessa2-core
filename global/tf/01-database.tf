@@ -19,3 +19,19 @@ resource "aws_dynamodb_table" "circle" {
     type = "S"
   }
 }
+
+resource "aws_dynamodb_table" "token" {
+  name         = "${local.appid}-login-token"
+  hash_key     = "token"
+  billing_mode = "PAY_PER_REQUEST"
+
+  ttl {
+    attribute_name = "expire_at"
+    enabled        = true
+  }
+
+  attribute {
+    name = "token"
+    type = "S"
+  }
+}
