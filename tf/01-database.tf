@@ -1,7 +1,9 @@
 resource "aws_dynamodb_table" "exhibition" {
-  name         = "${local.appid}-exhibition"
-  hash_key     = "id"
-  billing_mode = "PAY_PER_REQUEST"
+  name             = "${local.appid}-exhibition"
+  hash_key         = "id"
+  billing_mode     = "PAY_PER_REQUEST"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
     name = "id"
@@ -10,9 +12,11 @@ resource "aws_dynamodb_table" "exhibition" {
 }
 
 resource "aws_dynamodb_table" "circle" {
-  name         = "${local.appid}-circle"
-  hash_key     = "id"
-  billing_mode = "PAY_PER_REQUEST"
+  name             = "${local.appid}-circle"
+  hash_key         = "id"
+  billing_mode     = "PAY_PER_REQUEST"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
     name = "id"
@@ -21,12 +25,14 @@ resource "aws_dynamodb_table" "circle" {
 }
 
 resource "aws_dynamodb_table" "token" {
-  name         = "${local.appid}-login-token"
-  hash_key     = "token"
-  billing_mode = "PAY_PER_REQUEST"
+  name             = "${local.appid}-login-token"
+  hash_key         = "token"
+  billing_mode     = "PAY_PER_REQUEST"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   ttl {
-    attribute_name = "expire_at"
+    attribute_name = "ttl"
     enabled        = true
   }
 
