@@ -2,7 +2,7 @@ variable "name" {
   type = string
 }
 
-data "aws_iam_policy_document" "policy-kinesis" {
+data "aws_iam_policy_document" "policy-assume-kinesis" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "policy-s3" {
 
 resource "aws_iam_role" "role" {
   name               = var.name
-  assume_role_policy = data.aws_iam_policy_document.policy-kinesis.json
+  assume_role_policy = data.aws_iam_policy_document.policy-assume-kinesis.json
 }
 
 resource "aws_iam_policy" "policy" {

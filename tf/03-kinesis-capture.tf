@@ -8,7 +8,7 @@ data "archive_file" "function" {
   output_path = "lambda/function.zip"
 }
 
-data "aws_iam_policy_document" "policy-lambda" {
+data "aws_iam_policy_document" "policy-assume-lambda" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -68,7 +68,7 @@ resource "aws_iam_role_policy" "lambda_access_policy" {
 
 resource "aws_iam_role" "lambda_iam_role" {
   name               = local.function_name
-  assume_role_policy = data.aws_iam_policy_document.policy-lambda.json
+  assume_role_policy = data.aws_iam_policy_document.policy-assume-lambda.json
 }
 
 resource "aws_lambda_function" "dynamodb-capture" {
