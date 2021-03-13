@@ -21,6 +21,7 @@ data "aws_iam_policy_document" "policy-lambda" {
 
 data "aws_iam_policy_document" "policy-cloudwatch" {
   statement {
+    sid = "1"
     actions = [
       "logs:CreateLogStream",
       "logs:CreateLogGroup",
@@ -29,6 +30,18 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
 
     resources = [
       "arn:aws:logs:*:*:*",
+    ]
+  }
+
+  statement {
+    sid = "2"
+    actions = [
+      "firehose:PutRecord",
+      "firehose:PutRecordBatch"
+    ]
+
+    resources = [
+      module.log-database.kinesis_arn
     ]
   }
 }
