@@ -90,7 +90,7 @@ resource "aws_iam_role" "dynamodb-capture" {
 
 resource "aws_lambda_function" "dynamodb-capture" {
   function_name    = local.function_name
-  handler          = "lambda/handler.main"
+  handler          = "handler.main"
   filename         = data.archive_file.dynamodb-capture.output_path
   runtime          = "nodejs12.x"
   timeout          = 10
