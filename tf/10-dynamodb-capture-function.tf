@@ -4,8 +4,8 @@ locals {
 
 data "archive_file" "dynamodb-capture" {
   type        = "zip"
-  source_dir  = "lambda/src/"
-  output_path = "lambda/function.zip"
+  source_dir  = "function/dynamodb-capture/src/"
+  output_path = "function/dynamodb-capture/function.zip"
 }
 
 data "aws_iam_policy_document" "policy-assume-lambda" {
