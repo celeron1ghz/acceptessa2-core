@@ -44,7 +44,10 @@ module.exports.main = async (event) => {
   }
 
   //console.log(JSON.stringify(result));
-  await firehose.putRecordBatch({ DeliveryStreamName: "acceptessa2-log-database", Records: result }).promise();
+  await firehose.putRecordBatch({
+    DeliveryStreamName: process.env.FIREHOSE_DELIVERY_STREAM_NAME,
+    Records: result
+  }).promise();
 
   return "OK";
 };

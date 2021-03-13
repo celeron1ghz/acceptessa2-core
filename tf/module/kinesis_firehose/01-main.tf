@@ -73,6 +73,10 @@ resource "aws_kinesis_firehose_delivery_stream" "log" {
   }
 }
 
-output "kinesis_arn" {
+output "firehose_name" {
+  value = aws_kinesis_firehose_delivery_stream.log.name
+}
+
+output "firehose_arn" {
   value = aws_kinesis_firehose_delivery_stream.log.arn
 }

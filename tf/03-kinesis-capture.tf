@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
     ]
 
     resources = [
-      module.log-database.kinesis_arn
+      module.log-database.firehose_arn
     ]
   }
 
@@ -79,6 +79,12 @@ resource "aws_lambda_function" "dynamodb-capture" {
   timeout          = 10
   role             = aws_iam_role.lambda_iam_role.arn
   source_code_hash = data.archive_file.function.output_base64sha256
+
+  environment {
+    variables = {
+      FIREHOSE_DELIVERY_STREAM_NAME = module.log-database.firehose_name
+    }
+  }
 }
 
 resource "aws_lambda_event_source_mapping" "example" {
