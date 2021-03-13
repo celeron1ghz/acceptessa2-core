@@ -65,13 +65,16 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
     ]
 
     resources = [
-      aws_dynamodb_table.token.stream_arn
+      aws_dynamodb_table.token.stream_arn,
+      aws_dynamodb_table.exhibition.stream_arn,
+      aws_dynamodb_table.circle.stream_arn,
     ]
   }
 }
 
 resource "aws_cloudwatch_log_group" "dynamodb-capture" {
-  name = "/aws/lambda/${local.function_name}"
+  name              = "/aws/lambda/${local.function_name}"
+  retention_in_days = 7
 }
 
 resource "aws_iam_role_policy" "dynamodb-capture" {
@@ -101,8 +104,20 @@ resource "aws_lambda_function" "dynamodb-capture" {
   }
 }
 
-resource "aws_lambda_event_source_mapping" "dynamodb-capture" {
+resource "aws_lambda_event_source_mapping" "capture-token" {
   event_source_arn  = aws_dynamodb_table.token.stream_arn
+  function_name     = aws_lambda_function.dynamodb-capture.arn
+  starting_position = "LATEST"
+}
+
+resource "aws_lambda_event_source_mapping" "capture-exhibition" {
+  event_source_arn  = aws_dynamodb_table.exhibition.stream_arn
+  function_name     = aws_lambda_function.dynamodb-capture.arn
+  starting_position = "LATEST"
+}
+
+resource "aws_lambda_event_source_mapping" "capture-circle" {
+  event_source_arn  = aws_dynamodb_table.circle.stream_arn
   function_name     = aws_lambda_function.dynamodb-capture.arn
   starting_position = "LATEST"
 }
