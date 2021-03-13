@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "policy-log-aggregate" {
     ]
 
     resources = [
-      aws_kinesis_firehose_delivery_stream.log.arn
+      module.log-database.kinesis_arn
     ]
   }
 }
