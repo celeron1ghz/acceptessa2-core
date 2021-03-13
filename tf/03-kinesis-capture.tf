@@ -2,9 +2,9 @@ locals {
   function_name = "acceptessa2-core-dynamodb-capture"
 }
 
-data "archive_file" "function" {
+data "archive_file" "dynamodb-capture" {
   type        = "zip"
-  source_dir  = "lambda/"
+  source_dir  = "lambda/src/"
   output_path = "lambda/function.zip"
 }
 
@@ -23,18 +23,28 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
   statement {
     sid = "1"
     actions = [
-      "logs:CreateLogStream",
       "logs:CreateLogGroup",
-      "logs:PutLogEvents"
+      "logs:CreateLogStream",
     ]
 
     resources = [
-      "arn:aws:logs:*:*:*",
+      "${aws_cloudwatch_log_group.dynamodb-capture.arn}*:*"
     ]
   }
 
   statement {
     sid = "2"
+    actions = [
+      "logs:PutLogEvents"
+    ]
+
+    resources = [
+      "${aws_cloudwatch_log_group.dynamodb-capture.arn}*:*:*"
+    ]
+  }
+
+  statement {
+    sid = "3"
     actions = [
       "firehose:PutRecord",
       "firehose:PutRecordBatch"
@@ -46,7 +56,7 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
   }
 
   statement {
-    sid = "3"
+    sid = "4"
     actions = [
       "dynamodb:GetRecords",
       "dynamodb:GetShardIterator",
@@ -60,7 +70,11 @@ data "aws_iam_policy_document" "policy-cloudwatch" {
   }
 }
 
-resource "aws_iam_role_policy" "lambda_access_policy" {
+resource "aws_cloudwatch_log_group" "dynamodb-capture" {
+  name = "/aws/lambda/${local.function_name}"
+}
+
+resource "aws_iam_role_policy" "dynamodb-capture" {
   name   = local.function_name
   role   = aws_iam_role.lambda_iam_role.id
   policy = data.aws_iam_policy_document.policy-cloudwatch.json
@@ -74,11 +88,11 @@ resource "aws_iam_role" "lambda_iam_role" {
 resource "aws_lambda_function" "dynamodb-capture" {
   function_name    = local.function_name
   handler          = "lambda/handler.main"
-  filename         = data.archive_file.function.output_path
+  filename         = data.archive_file.dynamodb-capture.output_path
   runtime          = "nodejs12.x"
   timeout          = 10
   role             = aws_iam_role.lambda_iam_role.arn
-  source_code_hash = data.archive_file.function.output_base64sha256
+  source_code_hash = data.archive_file.dynamodb-capture.output_base64sha256
 
   environment {
     variables = {
@@ -87,7 +101,7 @@ resource "aws_lambda_function" "dynamodb-capture" {
   }
 }
 
-resource "aws_lambda_event_source_mapping" "example" {
+resource "aws_lambda_event_source_mapping" "dynamodb-capture" {
   event_source_arn  = aws_dynamodb_table.token.stream_arn
   function_name     = aws_lambda_function.dynamodb-capture.arn
   starting_position = "LATEST"
