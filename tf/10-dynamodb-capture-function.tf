@@ -8,7 +8,7 @@ data "archive_file" "dynamodb-capture" {
   output_path = "function/dynamodb-capture/function.zip"
 }
 
-data "aws_iam_policy_document" "policy-assume-lambda" {
+data "aws_iam_policy_document" "dynamodb-capture-assume-policy" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "policy-assume-lambda" {
   }
 }
 
-data "aws_iam_policy_document" "policy-cloudwatch" {
+data "aws_iam_policy_document" "dynamodb-capture-policy" {
   statement {
     sid = "1"
     actions = [
@@ -79,13 +79,13 @@ resource "aws_cloudwatch_log_group" "dynamodb-capture" {
 
 resource "aws_iam_role_policy" "dynamodb-capture" {
   name   = local.function_name
-  role   = aws_iam_role.lambda_iam_role.id
-  policy = data.aws_iam_policy_document.policy-cloudwatch.json
+  role   = aws_iam_role.dynamodb-capture.id
+  policy = data.aws_iam_policy_document.dynamodb-capture-policy.json
 }
 
-resource "aws_iam_role" "lambda_iam_role" {
+resource "aws_iam_role" "dynamodb-capture" {
   name               = local.function_name
-  assume_role_policy = data.aws_iam_policy_document.policy-assume-lambda.json
+  assume_role_policy = data.aws_iam_policy_document.dynamodb-capture-assume-policy.json
 }
 
 resource "aws_lambda_function" "dynamodb-capture" {
@@ -94,7 +94,7 @@ resource "aws_lambda_function" "dynamodb-capture" {
   filename         = data.archive_file.dynamodb-capture.output_path
   runtime          = "nodejs12.x"
   timeout          = 10
-  role             = aws_iam_role.lambda_iam_role.arn
+  role             = aws_iam_role.dynamodb-capture.arn
   source_code_hash = data.archive_file.dynamodb-capture.output_base64sha256
 
   environment {
